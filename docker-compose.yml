@@ -1,0 +1,55 @@
+version: '3.9'
+
+# Single source of truth: edit .env at the project root.
+#
+#   HOST_IP        - IP/hostname where the backend is reachable from browsers
+#                    (your LAN IP, a domain name, or 127.0.0.1 for local-only)
+#   BACKEND_PORT   - port the FastAPI server listens on  (default: 7001)
+#   FRONTEND_PORT  - port the Vite dev server listens on (default: 5173)
+#   ADMIN_USERNAME - username for theme/portfolio save    (default: admin)
+#   ADMIN_PASSWORD - password for theme/portfolio save    (default: admin)
+#   GEMINI_API_KEY / OPENAI_API_KEY / ANTHROPIC_API_KEY  - LLM keys
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    environment:
+      - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
+      - BACKEND_PORT=${BACKEND_PORT:-7001}
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      # Tell theme_save.py where to find the portfolio public dir inside the container
+      - PORTFOLIO_PUBLIC_DIR=/portfolio-public
+      - DATA_DIR=/app/data
+    ports:
+      - "${BACKEND_PORT:-7001}:${BACKEND_PORT:-7001}"
+    volumes:
+      # Persist generation history & portfolio data across container restarts
+      - ./backend/data:/app/data
+      # Persist the saved portfolio HTML (written by /api/themes/apply)
+      - ./my-portfolio/public:/portfolio-public
+    command: >
+      poetry run uvicorn main:app
+      --host 0.0.0.0
+      --port ${BACKEND_PORT:-7001}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # VITE_ vars are baked in at build time — sourced from root .env
+        - VITE_WS_BACKEND_URL=ws://${HOST_IP:-127.0.0.1}:${BACKEND_PORT:-7001}
+        - VITE_HTTP_BACKEND_URL=http://${HOST_IP:-127.0.0.1}:${BACKEND_PORT:-7001}
+    ports:
+      - "${FRONTEND_PORT:-5173}:5173"
+    depends_on:
+      - backend
+    restart: unless-stopped
