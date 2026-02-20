@@ -70,6 +70,9 @@ function Sidebar({
       ? commits[head].variants[commits[head].selectedVariantIndex].code
       : "";
 
+  const selectedVariantIndex =
+    head && commits[head] ? commits[head].selectedVariantIndex : null;
+
   // Check if the currently selected variant is complete
   const isSelectedVariantComplete =
     head &&
@@ -103,7 +106,7 @@ function Sidebar({
   // Reset error expanded state when variant changes
   useEffect(() => {
     setIsErrorExpanded(false);
-  }, [head, commits[head || ""]?.selectedVariantIndex]);
+  }, [head, selectedVariantIndex]);
 
   useEffect(() => {
     if (activeReferenceIndex >= referenceImages.length) {

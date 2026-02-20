@@ -15,7 +15,10 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../ui/select";
 import { capitalize } from "../../lib/utils";
-import { IS_RUNNING_ON_CLOUD } from "../../config";
+import {
+  API_KEY_DAILY_GENERATION_LIMIT,
+  IS_RUNNING_ON_CLOUD,
+} from "../../config";
 import {
   Accordion,
   AccordionContent,
@@ -71,6 +74,12 @@ function SettingsDialog({ settings, setSettings }: Props) {
               <div className="font-light mt-1 mb-2 text-xs leading-relaxed">
                 Only stored in your browser. Never stored on servers. Overrides
                 your .env config.
+                {IS_RUNNING_ON_CLOUD && (
+                  <>
+                    {" "}Limited to {API_KEY_DAILY_GENERATION_LIMIT} generations
+                    per day when using this key.
+                  </>
+                )}
               </div>
             </Label>
 

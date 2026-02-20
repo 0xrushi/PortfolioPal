@@ -1,6 +1,6 @@
 import { useProjectStore } from "../../store/project-store";
 import Spinner from "../core/Spinner";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useThrottle } from "../../hooks/useThrottle";
 
 const IFRAME_WIDTH = 1280;
@@ -93,13 +93,13 @@ function Variants() {
   const variants = commit?.variants || [];
   const selectedVariantIndex = commit?.selectedVariantIndex || 0;
 
-  const handleVariantClick = (index: number) => {
+  const handleVariantClick = useCallback((index: number) => {
     // Don't do anything if this is already the selected variant or no head
     if (index === selectedVariantIndex || !head) return;
 
     // First update the UI to show we're switching variants
     updateSelectedVariantIndex(head, index);
-  };
+  }, [selectedVariantIndex, head, updateSelectedVariantIndex]);
 
   // Add keyboard shortcuts for variant switching - MUST be before any early returns
   useEffect(() => {
@@ -127,7 +127,7 @@ function Variants() {
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [variants.length, commit?.isCommitted, selectedVariantIndex, head]);
+  }, [variants.length, commit, handleVariantClick]);
 
   // Early returns after all hooks
   // If there is no head, don't show the variants

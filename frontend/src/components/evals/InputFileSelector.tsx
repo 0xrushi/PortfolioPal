@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { HTTP_BACKEND_URL } from "../../config";
 import { BsCheckLg, BsChevronDown, BsChevronRight } from "react-icons/bs";
 import { Button } from "../ui/button";
@@ -18,11 +18,7 @@ function InputFileSelector({ onFilesSelected }: InputFileSelectorProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   
-  useEffect(() => {
-    fetchInputFiles();
-  }, []);
-
-  const fetchInputFiles = async () => {
+  const fetchInputFiles = useCallback(async () => {
     setIsLoading(true);
     try {
       const response = await fetch(`${HTTP_BACKEND_URL}/eval_input_files`);
@@ -42,7 +38,11 @@ function InputFileSelector({ onFilesSelected }: InputFileSelectorProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [onFilesSelected]);
+
+  useEffect(() => {
+    fetchInputFiles();
+  }, [fetchInputFiles]);
 
   const handleFileToggle = (filePath: string) => {
     setSelectedFiles((prev) => {

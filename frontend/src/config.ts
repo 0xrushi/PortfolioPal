@@ -10,3 +10,9 @@ export const HTTP_BACKEND_URL =
 
 export const PICO_BACKEND_FORM_SECRET =
   import.meta.env.VITE_PICO_BACKEND_FORM_SECRET || null;
+
+export const API_KEY_DAILY_GENERATION_LIMIT =
+  Number(import.meta.env.VITE_API_KEY_DAILY_GENERATION_LIMIT) || 10;
+
+export const API_KEY_DAILY_GENERATION_COUNTER_STORAGE_KEY =
+  "api-key-daily-generation-counter";

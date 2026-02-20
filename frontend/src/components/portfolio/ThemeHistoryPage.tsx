@@ -46,7 +46,7 @@ export default function ThemeHistoryPage() {
   // Auto-select today if it has entries
   useEffect(() => {
     if (entries.length === 0) return;
-    const today = now.toISOString().slice(0, 10);
+    const today = new Date().toISOString().slice(0, 10);
     const hasToday = entries.some((e) => e.generated_at.slice(0, 10) === today);
     if (hasToday) setSelectedDate(today);
   }, [entries]);

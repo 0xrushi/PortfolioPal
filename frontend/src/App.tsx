@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { generateCode } from "./generateCode";
 import SettingsDialog from "./components/settings/SettingsDialog";
 import { AppState, CodeGenerationParams, EditorTheme, Settings } from "./types";
-import { IS_RUNNING_ON_CLOUD } from "./config";
+import { API_KEY_DAILY_GENERATION_LIMIT, IS_RUNNING_ON_CLOUD } from "./config";
 import { PicoBadge } from "./components/messages/PicoBadge";
 import { OnboardingNote } from "./components/messages/OnboardingNote";
 import { usePersistedState } from "./hooks/usePersistedState";
@@ -28,6 +28,7 @@ import { DEFAULT_PORTFOLIO_HTML } from "./components/preview/defaultPortfolioHtm
 import { HTTP_BACKEND_URL } from "./config";
 import ClippyAssistant from "./components/portfolio/ClippyAssistant";
 import { FaCompress, FaExpand } from "react-icons/fa";
+import { tryConsumeApiKeyGeneration } from "./lib/apiKeyDailyGenerationCounter";
 
 function App() {
   const {
@@ -197,6 +198,16 @@ function App() {
   };
 
   function doGenerateCode(params: CodeGenerationParams) {
+    if (IS_RUNNING_ON_CLOUD && settings.openAiApiKey) {
+      const canGenerate = tryConsumeApiKeyGeneration();
+      if (!canGenerate) {
+        toast.error(
+          `Daily API key limit reached. You can only run ${API_KEY_DAILY_GENERATION_LIMIT} generations per day with your API key.`
+        );
+        return;
+      }
+    }
+
     // Reset the execution console
     resetExecutionConsoles();
 
