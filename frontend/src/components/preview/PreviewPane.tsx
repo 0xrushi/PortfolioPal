@@ -21,7 +21,9 @@ import { downloadCode } from "./download";
 import { Stack } from "../../lib/stacks";
 import SaveThemeDialog from "../portfolio/SaveThemeDialog";
 import useThrottle from "../../hooks/useThrottle";
+import { injectHashNavFix } from "../../lib/injectHashNavFix";
 import { HTTP_BACKEND_URL } from "../../config";
+
 
 function openInNewTab(code: string) {
   const newWindow = window.open("", "_blank");
@@ -61,8 +63,9 @@ function PreviewPane({ doUpdate, reset, settings }: Props) {
 
   useEffect(() => {
     if (!isAstroBlog || !iframeRef.current) return;
-    if (iframeRef.current.srcdoc !== throttledCode) {
-      iframeRef.current.srcdoc = throttledCode;
+    const fixedCode = injectHashNavFix(throttledCode);
+    if (iframeRef.current.srcdoc !== fixedCode) {
+      iframeRef.current.srcdoc = fixedCode;
     }
   }, [isAstroBlog, throttledCode]);
 
@@ -173,7 +176,7 @@ function PreviewPane({ doUpdate, reset, settings }: Props) {
               ref={iframeRef}
               title="Preview"
               className="w-full h-full border-0"
-              sandbox="allow-scripts"
+              sandbox="allow-scripts allow-same-origin"
             />
           </TabsContent>
           <TabsContent value="code" className="mt-0 flex-1 min-h-0 overflow-auto">

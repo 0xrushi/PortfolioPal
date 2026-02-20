@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 import useThrottle from "../../hooks/useThrottle";
 import EditPopup from "../select-and-edit/EditPopup";
+import { injectHashNavFix } from "../../lib/injectHashNavFix";
 
 interface Props {
   code: string;
@@ -73,8 +74,9 @@ function PreviewComponent({ code, device, doUpdate }: Props) {
   useEffect(() => {
     const iframe = iframeRef.current;
     if (!iframe) return;
-    if (iframe.srcdoc !== throttledCode) {
-      iframe.srcdoc = throttledCode;
+    const fixedCode = injectHashNavFix(throttledCode);
+    if (iframe.srcdoc !== fixedCode) {
+      iframe.srcdoc = fixedCode;
     }
   }, [throttledCode]);
 

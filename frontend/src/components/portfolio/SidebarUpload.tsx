@@ -1,9 +1,15 @@
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { toast } from "react-hot-toast";
 import { Cross2Icon } from "@radix-ui/react-icons";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
+import {
+  API_KEY_DAILY_GENERATION_LIMIT,
+  IS_RUNNING_ON_CLOUD,
+} from "../../config";
+import { getApiKeyGenerationsRemaining } from "../../lib/apiKeyDailyGenerationCounter";
+import { extractImageFileFromClipboardData } from "../../lib/extractImageFromClipboard";
 
 function fileToDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -30,18 +36,17 @@ interface Props {
     textPrompt?: string
   ) => void;
   doCreateFromText: (text: string) => void;
+  openAiApiKey?: string | null;
 }
 
-function SidebarUpload({ doCreate, doCreateFromText }: Props) {
+function SidebarUpload({ doCreate, doCreateFromText, openAiApiKey }: Props) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [dataUrl, setDataUrl] = useState<string | null>(null);
   const [textPrompt, setTextPrompt] = useState("");
   const [mode, setMode] = useState<"image" | "text">("image");
   const textRef = useRef<HTMLTextAreaElement>(null);
 
-  const handleDrop = useCallback(async (acceptedFiles: File[]) => {
-    if (acceptedFiles.length === 0) return;
-    const file = acceptedFiles[0];
+  const handleImageFile = useCallback(async (file: File) => {
     try {
       const url = await fileToDataURL(file);
       setPreviewUrl(URL.createObjectURL(file));
@@ -51,6 +56,24 @@ function SidebarUpload({ doCreate, doCreateFromText }: Props) {
       toast.error("Error reading file.");
     }
   }, []);
+
+  const handleDrop = useCallback(async (acceptedFiles: File[]) => {
+    if (acceptedFiles.length === 0) return;
+    handleImageFile(acceptedFiles[0]);
+  }, [handleImageFile]);
+
+  useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      const file = extractImageFileFromClipboardData(e.clipboardData);
+      if (file) {
+        e.preventDefault();
+        e.stopPropagation();
+        handleImageFile(file);
+      }
+    };
+    document.addEventListener("paste", handlePaste, true);
+    return () => document.removeEventListener("paste", handlePaste, true);
+  }, [handleImageFile]);
 
   const { getRootProps, getInputProps, open } = useDropzone({
     maxFiles: 1,
@@ -78,6 +101,11 @@ function SidebarUpload({ doCreate, doCreateFromText }: Props) {
       toast.error("Upload a screenshot or enter a text description.");
     }
   };
+
+  const showApiKeyDailyLimit = IS_RUNNING_ON_CLOUD && !!openAiApiKey;
+  const apiKeyGenerationsRemaining = showApiKeyDailyLimit
+    ? getApiKeyGenerationsRemaining()
+    : null;
 
   return (
     <div className="flex flex-col gap-2 mt-2">
@@ -119,7 +147,7 @@ function SidebarUpload({ doCreate, doCreateFromText }: Props) {
             >
               <input {...getInputProps()} />
               <p className="text-xs text-gray-500 dark:text-gray-400">
-                Drop a theme screenshot here or click to browse
+                Drop, paste, or click to upload a screenshot
               </p>
             </div>
           ) : (
@@ -168,6 +196,12 @@ function SidebarUpload({ doCreate, doCreateFromText }: Props) {
             }
           }}
         />
+      )}
+
+      {showApiKeyDailyLimit && apiKeyGenerationsRemaining !== null && (
+        <div className="text-[11px] text-gray-500 dark:text-gray-400">
+          Today: {apiKeyGenerationsRemaining}/{API_KEY_DAILY_GENERATION_LIMIT} generations left
+        </div>
       )}
 
       <Button onClick={handleGenerate} className="w-full" size="sm">

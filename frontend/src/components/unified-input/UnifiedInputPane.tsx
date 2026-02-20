@@ -70,7 +70,7 @@ function UnifiedInputPane({
         </TabsList>
 
         <TabsContent value="upload" className="mt-0">
-          <UploadTab doCreate={doCreate} />
+          <UploadTab doCreate={doCreate} openAiApiKey={settings.openAiApiKey} />
         </TabsContent>
 
         <TabsContent value="url" className="mt-0">
@@ -81,7 +81,7 @@ function UnifiedInputPane({
         </TabsContent>
 
         <TabsContent value="text" className="mt-0">
-          <TextTab doCreateFromText={doCreateFromText} />
+          <TextTab doCreateFromText={doCreateFromText} openAiApiKey={settings.openAiApiKey} />
         </TabsContent>
 
         <TabsContent value="import" className="mt-0">

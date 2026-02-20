@@ -26,10 +26,26 @@ const parseCounter = (value: string | null): DailyGenerationCounter | null => {
   }
 };
 
+const safeGetItem = (key: string): string | null => {
+  try {
+    return window.localStorage.getItem(key);
+  } catch {
+    return null;
+  }
+};
+
+const safeSetItem = (key: string, value: string): void => {
+  try {
+    window.localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors (e.g. sandboxed iframes, privacy modes)
+  }
+};
+
 const getCounter = (): DailyGenerationCounter => {
   const today = getToday();
   const stored = parseCounter(
-    window.localStorage.getItem(API_KEY_DAILY_GENERATION_COUNTER_STORAGE_KEY)
+    safeGetItem(API_KEY_DAILY_GENERATION_COUNTER_STORAGE_KEY)
   );
 
   if (!stored || stored.date !== today) {
@@ -40,7 +56,7 @@ const getCounter = (): DailyGenerationCounter => {
 };
 
 const setCounter = (counter: DailyGenerationCounter): void => {
-  window.localStorage.setItem(
+  safeSetItem(
     API_KEY_DAILY_GENERATION_COUNTER_STORAGE_KEY,
     JSON.stringify(counter)
   );

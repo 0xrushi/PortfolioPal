@@ -294,7 +294,7 @@ export default function ThemeHistoryPage() {
                   srcDoc={previewEntry.code}
                   title="Theme preview"
                   className="flex-1 w-full border-0"
-                  sandbox="allow-scripts"
+                  sandbox="allow-scripts allow-same-origin"
                 />
               </>
             ) : (

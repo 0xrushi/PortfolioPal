@@ -21,7 +21,9 @@ HISTORY_FILE = DATA_DIR / "history.json"
 
 # my-portfolio/public — overridable via env so Docker can mount it anywhere.
 PORTFOLIO_PUBLIC_DIR = Path(
-    os.environ.get("PORTFOLIO_PUBLIC_DIR", str(_APP_DIR.parent / "my-portfolio" / "public"))
+    os.environ.get(
+        "PORTFOLIO_PUBLIC_DIR", str(_APP_DIR.parent / "my-portfolio" / "public")
+    )
 )
 
 
@@ -66,13 +68,15 @@ def _save_history(entries: list[dict]) -> None:
 def _append_entry(theme_name: str, code: str, saved: bool) -> str:
     entries = _load_history()
     entry_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S%f")
-    entries.append({
-        "id": entry_id,
-        "theme_name": theme_name,
-        "generated_at": datetime.datetime.now().isoformat(),
-        "saved": saved,
-        "code": code,
-    })
+    entries.append(
+        {
+            "id": entry_id,
+            "theme_name": theme_name,
+            "generated_at": datetime.datetime.now().isoformat(),
+            "saved": saved,
+            "code": code,
+        }
+    )
     _save_history(entries)
     return entry_id
 
@@ -116,9 +120,8 @@ async def apply_to_portfolio(
         backup_dir = THEMES_DIR / f"_backup_{timestamp}"
         backup_dir.mkdir(parents=True, exist_ok=True)
         shutil.copy2(index_file, backup_dir / "index.html")
-        backup_path = str(backup_dir.relative_to(PROJECT_ROOT))
+        backup_path = str(backup_dir)
 
-    # Write the generated HTML
     index_file.write_text(request.code)
 
     # Log as a saved entry

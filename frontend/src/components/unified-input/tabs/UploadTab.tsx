@@ -5,6 +5,11 @@ import { Cross2Icon, ImageIcon } from "@radix-ui/react-icons";
 import { Button } from "../../ui/button";
 import { ScreenRecorderState } from "../../../types";
 import ScreenRecorder from "../../recording/ScreenRecorder";
+import {
+  API_KEY_DAILY_GENERATION_LIMIT,
+  IS_RUNNING_ON_CLOUD,
+} from "../../../config";
+import { getApiKeyGenerationsRemaining } from "../../../lib/apiKeyDailyGenerationCounter";
 
 function fileToDataURL(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -44,9 +49,10 @@ interface Props {
     inputMode: "image" | "video",
     textPrompt?: string
   ) => void;
+  openAiApiKey?: string | null;
 }
 
-function UploadTab({ doCreate }: Props) {
+function UploadTab({ doCreate, openAiApiKey }: Props) {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [uploadedDataUrls, setUploadedDataUrls] = useState<string[]>([]);
   const [uploadedInputMode, setUploadedInputMode] = useState<
@@ -63,6 +69,11 @@ function UploadTab({ doCreate }: Props) {
   const hasUploadedFile = uploadedDataUrls.length > 0;
   const remainingSlots = Math.max(0, MAX_FILES - files.length);
   const isAtLimit = remainingSlots === 0;
+
+  const showApiKeyDailyLimit = IS_RUNNING_ON_CLOUD && !!openAiApiKey;
+  const apiKeyGenerationsRemaining = showApiKeyDailyLimit
+    ? getApiKeyGenerationsRemaining()
+    : null;
 
   const handleGenerate = useCallback(() => {
     if (uploadedDataUrls.length > 0) {
@@ -475,6 +486,11 @@ function UploadTab({ doCreate }: Props) {
           )}
 
           <div className="flex flex-col items-center gap-1 w-full max-w-md">
+            {showApiKeyDailyLimit && apiKeyGenerationsRemaining !== null && (
+              <div className="text-[11px] text-gray-500">
+                Today: {apiKeyGenerationsRemaining}/{API_KEY_DAILY_GENERATION_LIMIT} generations left
+              </div>
+            )}
             <Button
               onClick={handleGenerate}
               className="w-full"

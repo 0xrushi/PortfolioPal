@@ -2,9 +2,15 @@ import { useState, useRef, useEffect } from "react";
 import { Button } from "../../ui/button";
 import { Textarea } from "../../ui/textarea";
 import toast from "react-hot-toast";
+import {
+  API_KEY_DAILY_GENERATION_LIMIT,
+  IS_RUNNING_ON_CLOUD,
+} from "../../../config";
+import { getApiKeyGenerationsRemaining } from "../../../lib/apiKeyDailyGenerationCounter";
 
 interface Props {
   doCreateFromText: (text: string) => void;
+  openAiApiKey?: string | null;
 }
 
 const EXAMPLE_PROMPTS = [
@@ -14,9 +20,14 @@ const EXAMPLE_PROMPTS = [
   "A travel itinerary planner with map and daily schedule",
 ];
 
-function TextTab({ doCreateFromText }: Props) {
+function TextTab({ doCreateFromText, openAiApiKey }: Props) {
   const [text, setText] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  const showApiKeyDailyLimit = IS_RUNNING_ON_CLOUD && !!openAiApiKey;
+  const apiKeyGenerationsRemaining = showApiKeyDailyLimit
+    ? getApiKeyGenerationsRemaining()
+    : null;
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -98,6 +109,12 @@ function TextTab({ doCreateFromText }: Props) {
                 ))}
               </div>
             </div>
+
+            {showApiKeyDailyLimit && apiKeyGenerationsRemaining !== null && (
+              <p className="text-[11px] text-gray-500 text-center">
+                Today: {apiKeyGenerationsRemaining}/{API_KEY_DAILY_GENERATION_LIMIT} generations left
+              </p>
+            )}
 
             <Button
               onClick={handleGenerate}

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { generateCode } from "./generateCode";
 import SettingsDialog from "./components/settings/SettingsDialog";
 import { AppState, CodeGenerationParams, EditorTheme, Settings } from "./types";
@@ -24,11 +24,13 @@ import { createCommit } from "./components/commits/utils";
 import PortfolioEditor from "./components/portfolio/PortfolioEditor";
 import SidebarUpload from "./components/portfolio/SidebarUpload";
 import ThemeHistoryPage from "./components/portfolio/ThemeHistoryPage";
-import { DEFAULT_PORTFOLIO_HTML } from "./components/preview/defaultPortfolioHtml";
+import { buildDefaultPortfolioHtml } from "./components/preview/defaultPortfolioHtml";
 import { HTTP_BACKEND_URL } from "./config";
 import ClippyAssistant from "./components/portfolio/ClippyAssistant";
 import { FaCompress, FaExpand } from "react-icons/fa";
 import { tryConsumeApiKeyGeneration } from "./lib/apiKeyDailyGenerationCounter";
+import { injectHashNavFix } from "./lib/injectHashNavFix";
+
 
 function App() {
   const {
@@ -88,20 +90,39 @@ function App() {
 
   const wsRef = useRef<WebSocket>(null);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [currentPortfolioHtml, setCurrentPortfolioHtml] = useState(DEFAULT_PORTFOLIO_HTML);
+  const [currentPortfolioHtml, setCurrentPortfolioHtml] = useState("");
   const [isPortfolioFullscreen, setIsPortfolioFullscreen] = useState(true);
   const [showClippyAssistant, setShowClippyAssistant] = useState(true);
 
   const isAstroBlog = settings.generatedCodeConfig === Stack.ASTRO_BLOG;
 
-  // Fetch the saved portfolio HTML on mount so refresh shows the last saved site
+  const portfolioHtmlWithHashFix = useMemo(
+    () => injectHashNavFix(currentPortfolioHtml),
+    [currentPortfolioHtml]
+  );
+
+  // Fetch the saved portfolio HTML on mount, falling back to a default
+  // page built from portfolio.json data.
   useEffect(() => {
     fetch(`${HTTP_BACKEND_URL}/api/themes/current`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.html) setCurrentPortfolioHtml(data.html);
+        if (data.html) {
+          setCurrentPortfolioHtml(data.html);
+          return;
+        }
+        // No saved theme — build default from portfolio data
+        return fetch(`${HTTP_BACKEND_URL}/api/portfolio`)
+          .then((r) => r.json())
+          .then((portfolio) => setCurrentPortfolioHtml(buildDefaultPortfolioHtml(portfolio)));
       })
-      .catch(() => {});
+      .catch(() => {
+        // Backend unreachable — try portfolio data alone
+        fetch(`${HTTP_BACKEND_URL}/api/portfolio`)
+          .then((r) => r.json())
+          .then((portfolio) => setCurrentPortfolioHtml(buildDefaultPortfolioHtml(portfolio)))
+          .catch(() => {});
+      });
   }, []);
 
   // Indicate coding state using the browser tab's favicon and title
@@ -407,7 +428,11 @@ function App() {
           {IS_RUNNING_ON_CLOUD && !settings.openAiApiKey && <OnboardingNote />}
 
           <>
-            <SidebarUpload doCreate={doCreate} doCreateFromText={doCreateFromText} />
+            <SidebarUpload
+              doCreate={doCreate}
+              doCreateFromText={doCreateFromText}
+              openAiApiKey={settings.openAiApiKey}
+            />
             <PortfolioEditor />
           </>
 
@@ -429,11 +454,11 @@ function App() {
       >
         {showFullscreenPortfolio && (
           <div className="relative h-[calc(100vh-1.5rem)]">
-            <iframe
-              srcDoc={currentPortfolioHtml}
-              className="w-full h-full border-0"
-              title="Portfolio Preview"
-              sandbox="allow-scripts"
+              <iframe
+                srcDoc={portfolioHtmlWithHashFix}
+                className="w-full h-full border-0"
+                title="Portfolio Preview"
+                sandbox="allow-scripts allow-same-origin"
             />
             <button
               className="absolute right-5 top-5 z-20 rounded-md border border-slate-300 bg-white p-2 text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
@@ -469,10 +494,10 @@ function App() {
             </div>
             <div className="h-[58vh] mx-4 mt-2">
               <iframe
-                srcDoc={currentPortfolioHtml}
+                srcDoc={portfolioHtmlWithHashFix}
                 className="w-full h-full border border-gray-200 rounded-lg"
                 title="Portfolio Preview"
-                sandbox="allow-scripts"
+                sandbox="allow-scripts allow-same-origin"
               />
             </div>
             <ThemeHistoryPage />
