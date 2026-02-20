@@ -1,25 +1,12 @@
 export function PicoBadge() {
   return (
-    <>
-      <a
-        href="https://screenshot-to-code.canny.io/feature-requests"
-        target="_blank"
-      >
-        <div
-          className="fixed z-50 bottom-16 right-5 rounded-md shadow bg-black
-         text-white px-4 text-xs py-3 cursor-pointer"
-        >
-          feature requests?
-        </div>
-      </a>
-      <a href="https://picoapps.xyz?ref=screenshot-to-code" target="_blank">
-        <div
-          className="fixed z-50 bottom-5 right-5 rounded-md shadow text-black
-         bg-white px-4 text-xs py-3 cursor-pointer"
-        >
-          an open source project by Pico
-        </div>
-      </a>
-    </>
+    <a
+      href="https://github.com/0xrushi/PortfolioPal"
+      target="_blank"
+      rel="noreferrer"
+      className="inline-flex items-center justify-center rounded-md border border-gray-200 bg-white px-3 py-2 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-gray-700 dark:bg-zinc-900 dark:text-gray-200 dark:hover:bg-zinc-800"
+    >
+      Feature requests? Give here
+    </a>
   );
 }

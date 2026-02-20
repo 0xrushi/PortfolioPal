@@ -5,6 +5,7 @@ from portfolio.schema import PortfolioData
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 PORTFOLIO_FILE = DATA_DIR / "portfolio.json"
+PORTFOLIO_EXAMPLE_FILE = DATA_DIR / "portfolio.json.example"
 
 
 def get_default_portfolio() -> PortfolioData:
@@ -114,16 +115,36 @@ def get_default_portfolio() -> PortfolioData:
             {
                 "category": "Development",
                 "items": [
-                    {"name": "VS Code", "description": "Primary code editor", "url": "https://code.visualstudio.com"},
-                    {"name": "Warp", "description": "Modern terminal", "url": "https://warp.dev"},
-                    {"name": "Arc", "description": "Browser for development", "url": "https://arc.net"},
+                    {
+                        "name": "VS Code",
+                        "description": "Primary code editor",
+                        "url": "https://code.visualstudio.com",
+                    },
+                    {
+                        "name": "Warp",
+                        "description": "Modern terminal",
+                        "url": "https://warp.dev",
+                    },
+                    {
+                        "name": "Arc",
+                        "description": "Browser for development",
+                        "url": "https://arc.net",
+                    },
                 ],
             },
             {
                 "category": "Design",
                 "items": [
-                    {"name": "Figma", "description": "UI/UX design", "url": "https://figma.com"},
-                    {"name": "Excalidraw", "description": "Whiteboarding and diagrams", "url": "https://excalidraw.com"},
+                    {
+                        "name": "Figma",
+                        "description": "UI/UX design",
+                        "url": "https://figma.com",
+                    },
+                    {
+                        "name": "Excalidraw",
+                        "description": "Whiteboarding and diagrams",
+                        "url": "https://excalidraw.com",
+                    },
                 ],
             },
         ],
@@ -131,9 +152,10 @@ def get_default_portfolio() -> PortfolioData:
 
 
 def load_portfolio() -> PortfolioData:
-    if PORTFOLIO_FILE.exists():
-        raw = json.loads(PORTFOLIO_FILE.read_text())
-        return PortfolioData(**raw)
+    for file_path in (PORTFOLIO_FILE, PORTFOLIO_EXAMPLE_FILE):
+        if file_path.exists():
+            raw = json.loads(file_path.read_text())
+            return PortfolioData(**raw)
     return get_default_portfolio()
 
 

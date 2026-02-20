@@ -408,7 +408,6 @@ function App() {
 
   return (
     <div className="mt-2 dark:bg-black dark:text-white">
-      {IS_RUNNING_ON_CLOUD && <PicoBadge />}
       {IS_RUNNING_ON_CLOUD && (
         <TermsOfServiceDialog
           open={!settings.isTermOfServiceAccepted}
@@ -443,6 +442,12 @@ function App() {
               regenerate={regenerate}
               cancelCodeGeneration={cancelCodeGeneration}
             />
+          )}
+
+          {IS_RUNNING_ON_CLOUD && (
+            <div className="mt-auto border-t border-gray-200 pt-3 dark:border-gray-800">
+              <PicoBadge />
+            </div>
           )}
         </CollapsibleSidebar>
       )}

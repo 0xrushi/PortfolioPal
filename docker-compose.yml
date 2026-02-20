@@ -39,8 +39,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_WS_BACKEND_URL=ws://backend:7001
-        - VITE_HTTP_BACKEND_URL=http://backend:7001
+        # In production we default to same-origin (see frontend/src/config.ts).
+        - VITE_IS_DEPLOYED=true
     expose:
       - "5173"
     depends_on:

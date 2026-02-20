@@ -15,3 +15,7 @@ frontend/.env.local
 
 # Mac files
 .DS_Store
+uconsole*.img.*
+backend/data/history.json
+backend/data/portfolio.json
+backend/data/profile.png

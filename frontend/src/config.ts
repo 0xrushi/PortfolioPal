@@ -2,11 +2,29 @@
 export const IS_RUNNING_ON_CLOUD =
   import.meta.env.VITE_IS_DEPLOYED === "true" || false;
 
-export const WS_BACKEND_URL =
-  import.meta.env.VITE_WS_BACKEND_URL || "ws://127.0.0.1:7001";
+function isNonEmptyString(v: unknown): v is string {
+  return typeof v === "string" && v.trim().length > 0;
+}
 
-export const HTTP_BACKEND_URL =
-  import.meta.env.VITE_HTTP_BACKEND_URL || "http://127.0.0.1:7001";
+function getRuntimeHttpBase(): string {
+  // Empty string => use same-origin relative requests (e.g. `/api/...`).
+  if (typeof window === "undefined") return "http://127.0.0.1:7001";
+  return "";
+}
+
+function getRuntimeWsBase(): string {
+  if (typeof window === "undefined") return "ws://127.0.0.1:7001";
+  const protocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+  return `${protocol}//${window.location.host}`;
+}
+
+export const WS_BACKEND_URL = isNonEmptyString(import.meta.env.VITE_WS_BACKEND_URL)
+  ? import.meta.env.VITE_WS_BACKEND_URL
+  : getRuntimeWsBase();
+
+export const HTTP_BACKEND_URL = isNonEmptyString(import.meta.env.VITE_HTTP_BACKEND_URL)
+  ? import.meta.env.VITE_HTTP_BACKEND_URL
+  : getRuntimeHttpBase();
 
 export const PICO_BACKEND_FORM_SECRET =
   import.meta.env.VITE_PICO_BACKEND_FORM_SECRET || null;
