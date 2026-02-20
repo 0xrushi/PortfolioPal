@@ -21,18 +21,12 @@ services:
       - ADMIN_USERNAME=${ADMIN_USERNAME:-admin}
       - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin}
       - BACKEND_PORT=${BACKEND_PORT:-7001}
-      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
-      # Tell theme_save.py where to find the portfolio public dir inside the container
       - PORTFOLIO_PUBLIC_DIR=/portfolio-public
       - DATA_DIR=/app/data
-    ports:
-      - "${BACKEND_PORT:-7001}:${BACKEND_PORT:-7001}"
+    expose:
+      - "7001"
     volumes:
-      # Persist generation history & portfolio data across container restarts
       - ./backend/data:/app/data
-      # Persist the saved portfolio HTML (written by /api/themes/apply)
       - ./my-portfolio/public:/portfolio-public
     command: >
       poetry run uvicorn main:app
@@ -45,11 +39,25 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        # VITE_ vars are baked in at build time — sourced from root .env
-        - VITE_WS_BACKEND_URL=ws://${HOST_IP:-127.0.0.1}:${BACKEND_PORT:-7001}
-        - VITE_HTTP_BACKEND_URL=http://${HOST_IP:-127.0.0.1}:${BACKEND_PORT:-7001}
-    ports:
-      - "${FRONTEND_PORT:-80}:5173"
+        - VITE_WS_BACKEND_URL=ws://backend:7001
+        - VITE_HTTP_BACKEND_URL=http://backend:7001
+    expose:
+      - "5173"
     depends_on:
+      - backend
+    restart: unless-stopped
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/certs:/etc/letsencrypt
+      - ./nginx/www:/var/www/certbot
+    depends_on:
+      - frontend
       - backend
     restart: unless-stopped
