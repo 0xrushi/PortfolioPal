@@ -51,6 +51,46 @@ class HistoryEntry(BaseModel):
     code: str
 
 
+def _normalize_history_entry(entry: dict) -> dict | None:
+    # Backward/forward compatibility: tolerate older history formats.
+    # If we cannot produce something previewable, skip the entry.
+    code = entry.get("code")
+    if not isinstance(code, str) or not code.strip():
+        snippet = entry.get("preview_snippet")
+        if isinstance(snippet, str) and snippet.strip():
+            code = snippet
+        else:
+            return None
+
+    generated_at = entry.get("generated_at")
+    if not isinstance(generated_at, str) or not generated_at.strip():
+        applied_at = entry.get("applied_at")
+        if isinstance(applied_at, str) and applied_at.strip():
+            generated_at = applied_at
+        else:
+            generated_at = datetime.datetime.now().isoformat()
+
+    saved = entry.get("saved")
+    if not isinstance(saved, bool):
+        saved = bool(entry.get("applied_at"))
+
+    theme_name = entry.get("theme_name")
+    if not isinstance(theme_name, str) or not theme_name.strip():
+        theme_name = "untitled"
+
+    entry_id = entry.get("id")
+    if not isinstance(entry_id, str) or not entry_id.strip():
+        entry_id = datetime.datetime.now().strftime("%Y%m%d_%H%M%S%f")
+
+    return {
+        "id": entry_id,
+        "theme_name": theme_name,
+        "generated_at": generated_at,
+        "saved": saved,
+        "code": code,
+    }
+
+
 def _load_history() -> list[dict]:
     if not HISTORY_FILE.exists():
         return []
@@ -133,7 +173,18 @@ async def apply_to_portfolio(
 @router.get("/history", response_model=list[HistoryEntry])
 async def get_history() -> list[HistoryEntry]:
     entries = _load_history()
-    return [HistoryEntry(**e) for e in entries]
+    result: list[HistoryEntry] = []
+    for e in entries:
+        if not isinstance(e, dict):
+            continue
+        normalized = _normalize_history_entry(e)
+        if not normalized:
+            continue
+        try:
+            result.append(HistoryEntry(**normalized))
+        except Exception:
+            continue
+    return result
 
 
 @router.delete("/history/{entry_id}")
