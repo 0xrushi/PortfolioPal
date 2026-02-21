@@ -451,7 +451,7 @@ function App() {
                 srcDoc={portfolioHtmlWithHashFix}
                 className="w-full h-full border-0"
                 title="Portfolio Preview"
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             />
             <button
               className="absolute right-5 top-5 z-20 rounded-md border border-slate-300 bg-white p-2 text-slate-700 shadow-sm transition-colors hover:bg-slate-100"
@@ -490,7 +490,7 @@ function App() {
                 srcDoc={portfolioHtmlWithHashFix}
                 className="w-full h-full border border-gray-200 rounded-lg"
                 title="Portfolio Preview"
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
               />
             </div>
             <ThemeHistoryPage />

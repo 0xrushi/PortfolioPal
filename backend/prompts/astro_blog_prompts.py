@@ -36,6 +36,7 @@ Build a single-page portfolio site with these sections (include all that have da
 You MUST hardcode all portfolio data directly into the HTML as literal strings.
 Do NOT use JavaScript variables, template literals, or dynamic expressions for content.
 Copy the actual text values from the JSON directly into the HTML.
+Do NOT rewrite, paraphrase, or "improve" any titles or descriptions from portfolio.json; keep them verbatim.
 
 WRONG (do NOT do this):
 ```
@@ -78,6 +79,10 @@ CORRECT:
 - Make the page responsive (mobile-first).
 - HARDCODE all portfolio data as literal text/HTML.
 - For images, use the actual URLs from the portfolio JSON, or https://placehold.co if none provided.
+- Preserve section headings/subheadings exactly unless the user explicitly asks to rename them.
+- If you include the Journey section, the visible section heading text MUST be exactly: "Plot Twists I Actually Pulled Off".
+- If you include a nav link to the Journey section, its label text MUST be exactly: "Plot Twists I Actually Pulled Off".
+- Social links must include an icon. If a dev.to link exists and you don't have a brand icon, use a simple default dev.to icon (e.g. an inline SVG badge with "DEV"). Do not omit the icon.
 - Include smooth scroll, subtle hover effects and transitions.
 - Use semantic HTML throughout.
 - Minimal JavaScript is OK for interactivity (theme toggle, mobile menu) but NOT for rendering content.
@@ -114,6 +119,7 @@ Header, Hero, Experience, Skills, Projects, Awards, Education, Journey, Writing,
 
 You MUST hardcode all portfolio data directly into the HTML as literal strings.
 Do NOT use JavaScript for rendering content. Copy text values from JSON into the HTML.
+Do NOT rewrite, paraphrase, or "improve" any titles or descriptions from portfolio.json; keep them verbatim.
 
 WRONG: `document.getElementById('name').textContent = data.name;`
 CORRECT: `<h1>Jane Doe</h1>`
@@ -127,6 +133,10 @@ For repeated items, write out each one fully with the actual data, not loops.
 - Make the page responsive (mobile-first).
 - All CSS in a <style> block, no external frameworks.
 - HARDCODE the portfolio JSON data as literal text.
+- Preserve section headings/subheadings exactly unless the user explicitly asks to rename them.
+- If you include the Journey section, the visible section heading text MUST be exactly: "Plot Twists I Actually Pulled Off".
+- If you include a nav link to the Journey section, its label text MUST be exactly: "Plot Twists I Actually Pulled Off".
+- Social links must include an icon. If a dev.to link exists and you don't have a brand icon, use a simple default dev.to icon (e.g. an inline SVG badge with "DEV"). Do not omit the icon.
 - Use semantic HTML.
 - Do NOT use markdown fences. Output raw HTML only.
 - Write COMPLETE code. The entire output must be one HTML document.
@@ -152,11 +162,15 @@ Do NOT output multiple files. Do NOT use `--- FILE:` markers.
 
 All content text must be hardcoded as literal strings in the HTML.
 Do NOT use JavaScript variables or loops for content data.
+Do NOT rewrite, paraphrase, or "improve" any titles or descriptions from portfolio.json; keep them verbatim.
 
 ## Guidelines
 
 - Output the COMPLETE HTML file, not just the changed parts.
 - Maintain the existing visual style unless the user asks to change it.
+- Preserve existing headings/subheadings unless the user explicitly asks to rename them.
+- Never remove or rename the heading text "Plot Twists I Actually Pulled Off" if it exists in the code.
+- Social links must include an icon. If a dev.to link exists and you don't have a brand icon, use a simple default dev.to icon (e.g. an inline SVG badge with "DEV"). Do not omit the icon.
 - All CSS in a <style> block.
 - Do NOT use markdown fences. Output raw HTML only.
 - Write COMPLETE code. The entire output must be one HTML document.

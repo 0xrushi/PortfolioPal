@@ -25,6 +25,25 @@ import { injectHashNavFix } from "../../lib/injectHashNavFix";
 import { HTTP_BACKEND_URL } from "../../config";
 
 
+const EXTERNAL_LINKS_SCRIPT = `<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('a[href]').forEach(function(a) {
+    var href = a.getAttribute('href');
+    if (href && !href.startsWith('#')) {
+      a.setAttribute('target', '_blank');
+      a.setAttribute('rel', 'noopener noreferrer');
+    }
+  });
+});
+</script>`;
+
+function injectExternalLinkTargets(code: string): string {
+  if (code.includes('</body>')) {
+    return code.replace('</body>', EXTERNAL_LINKS_SCRIPT + '</body>');
+  }
+  return code + EXTERNAL_LINKS_SCRIPT;
+}
+
 function openInNewTab(code: string) {
   const newWindow = window.open("", "_blank");
   if (newWindow) {
@@ -51,10 +70,11 @@ function PreviewPane({ doUpdate, reset, settings }: Props) {
     ? currentCommit.variants[currentCommit.selectedVariantIndex].code
     : "";
 
-  const previewCode =
+  const previewCode = injectExternalLinkTargets(
     inputMode === "video" && appState === AppState.CODING
       ? extractHtml(currentCode)
-      : currentCode;
+      : currentCode
+  );
 
   const isAstroBlog = settings.generatedCodeConfig === Stack.ASTRO_BLOG;
   const isReady = appState === AppState.CODE_READY;
@@ -176,7 +196,7 @@ function PreviewPane({ doUpdate, reset, settings }: Props) {
               ref={iframeRef}
               title="Preview"
               className="w-full h-full border-0"
-              sandbox="allow-scripts allow-same-origin allow-popups"
+              sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
             />
           </TabsContent>
           <TabsContent value="code" className="mt-0 flex-1 min-h-0 overflow-auto">
