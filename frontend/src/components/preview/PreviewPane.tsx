@@ -176,7 +176,7 @@ function PreviewPane({ doUpdate, reset, settings }: Props) {
               ref={iframeRef}
               title="Preview"
               className="w-full h-full border-0"
-              sandbox="allow-scripts allow-same-origin"
+              sandbox="allow-scripts allow-same-origin allow-popups"
             />
           </TabsContent>
           <TabsContent value="code" className="mt-0 flex-1 min-h-0 overflow-auto">
