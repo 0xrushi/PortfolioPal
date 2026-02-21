@@ -6,7 +6,6 @@ import { API_KEY_DAILY_GENERATION_LIMIT, IS_RUNNING_ON_CLOUD } from "./config";
 import { PicoBadge } from "./components/messages/PicoBadge";
 import { OnboardingNote } from "./components/messages/OnboardingNote";
 import { usePersistedState } from "./hooks/usePersistedState";
-import TermsOfServiceDialog from "./components/TermsOfServiceDialog";
 import { USER_CLOSE_WEB_SOCKET_CODE } from "./constants";
 import { extractHistory } from "./components/history/utils";
 import toast from "react-hot-toast";
@@ -219,6 +218,8 @@ function App() {
   };
 
   function doGenerateCode(params: CodeGenerationParams) {
+    window.dispatchEvent(new Event("generation-attempted"));
+
     if (IS_RUNNING_ON_CLOUD && settings.openAiApiKey) {
       const canGenerate = tryConsumeApiKeyGeneration();
       if (!canGenerate) {
@@ -396,24 +397,11 @@ function App() {
     setUpdateImages([]);
   }
 
-  const handleTermDialogOpenChange = (open: boolean) => {
-    setSettings((s) => ({
-      ...s,
-      isTermOfServiceAccepted: !open,
-    }));
-  };
-
   const isAstroInitialView = isAstroBlog && appState === AppState.INITIAL;
   const showFullscreenPortfolio = isAstroInitialView && isPortfolioFullscreen;
 
   return (
     <div className="mt-2 dark:bg-black dark:text-white">
-      {IS_RUNNING_ON_CLOUD && (
-        <TermsOfServiceDialog
-          open={!settings.isTermOfServiceAccepted}
-          onOpenChange={handleTermDialogOpenChange}
-        />
-      )}
       {!showFullscreenPortfolio && (
         <CollapsibleSidebar
           isCollapsed={sidebarCollapsed}

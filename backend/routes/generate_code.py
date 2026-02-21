@@ -65,6 +65,7 @@ from prompts.claude_prompts import GEMINI_VIDEO_PROMPT
 from portfolio.storage import load_portfolio
 from prompts.types import Stack, PromptContent
 from video.utils import get_video_bytes_and_mime_type
+from usage.daily_attempts import record_daily_attempt
 
 # from utils import pprint_prompt
 from ws.constants import APP_ERROR_WEB_SOCKET_CODE  # type: ignore
@@ -868,6 +869,21 @@ class StatusBroadcastMiddleware(Middleware):
         await next_func()
 
 
+class AttemptTrackingMiddleware(Middleware):
+    async def process(
+        self, context: PipelineContext, next_func: Callable[[], Awaitable[None]]
+    ) -> None:
+        try:
+            stats = record_daily_attempt()
+            print(
+                f"[ATTEMPTS] {stats['used']}/{stats['limit']} used today ({stats['remaining']} remaining)"
+            )
+        except Exception as e:
+            print(f"[ATTEMPTS] Failed to record attempt: {e}")
+
+        await next_func()
+
+
 class PromptCreationMiddleware(Middleware):
     """Handles prompt creation"""
 
@@ -979,6 +995,7 @@ async def stream_code(websocket: WebSocket):
     # Configure the pipeline
     pipeline.use(WebSocketSetupMiddleware())
     pipeline.use(ParameterExtractionMiddleware())
+    pipeline.use(AttemptTrackingMiddleware())
     pipeline.use(StatusBroadcastMiddleware())
     pipeline.use(PromptCreationMiddleware())
     pipeline.use(CodeGenerationMiddleware())
